@@ -1,4 +1,5 @@
 import flet as ft
+
 from alert import AlertManager
 from deposito_strumenti import DepositoStrumenti
 
@@ -36,8 +37,15 @@ def main(page: ft.Page):
     lista_strumenti = ft.ListView(expand=True, spacing=5, padding=10, auto_scroll=True)
 
     # Tutti i TextField per le info necessarie per aggiungere un nuovo strumento (tipo, marca, anno, contatore posti)
-    # TODO
+    #Un controllo Text con testo "Aggiungi Nuovo Strumento".
+    #Aggiungere 3 controlli TextField per inserire tipo, marca e anno di acquisto.
+    testoAggiungi= ft.Text("Aggiungi nuovo strumento", size =20 )
+    #INPUT di testo per l'inserimento
+    inputTipo= ft.TextField("aggiungi tipo")
+    inputMarca= ft.TextField("aggiungi marca")
+    inputAnno= ft.TextField("aggiungi anno")
 
+    input_valore = ft.TextField(value="0.0", text_align=ft.TextAlign.CENTER, width=100)
     # --- FUNZIONI APP ---
     def aggiorna_lista_strumenti():
         lista_strumenti.controls.clear()
@@ -49,21 +57,66 @@ def main(page: ft.Page):
     def cambia_tema(e):
         page.theme_mode = ft.ThemeMode.DARK if toggle_cambia_tema.value else ft.ThemeMode.LIGHT
         toggle_cambia_tema.label = "Tema scuro" if toggle_cambia_tema.value else "Tema chiaro"
-
+        page.update()
     def conferma_responsabile(e):
         deposito.set_responsabile(input_responsabile.value)
         txt_responsabile.value = f"Responsabile: {deposito.get_responsabile()}"
-
+        page.update()
     # Handlers per la gestione dei pulsanti utili all'inserimento di un nuovo strumento
-    # TODO
+    def aggiungi_handler(e):
+        try:
+            # 1 scrivo anno e valore
+            anno = int(inputAnno.value)
+            valore = float(input_valore.value)
+
+            # avevo gia fatto la funzione nel lab 03
+            deposito.aggiungi_strumento(inputTipo.value, inputMarca.value, anno, valore)
+
+            #input da mettere
+            inputTipo.value = ""
+            inputMarca.value = ""
+            inputAnno.value = ""
+            input_valore.value = "0.0"
+
+
+            aggiorna_lista_strumenti()
+            page.update()
+
+
+
+        except ValueError:
+            #
+            alert.show_alert("Errore: inserisci valori numerici validi per anno e valore.")
+    #faccio qui le funzioni che mi servono per creare i bottoni e poi le riprendo
+    def diminuisci_valore(e):
+        try:
+            valore=float(input_valore.value)
+            if valore >= 10:
+                input_valore.value = str(valore -10) #è una stringa perchè i .value sono stringhe
+            page.update()
+        except ValueError:
+            pass
+    def aumenta_valore(e):
+        try:
+            valore = float(input_valore.value)
+            #if valore < 10:
+            input_valore.value = str(valore + 10)
+            page.update()
+        except ValueError:
+            pass
+
 
     # --- EVENTI ---
     toggle_cambia_tema = ft.Switch(label="Tema scuro", value=True, on_change=cambia_tema)
     pulsante_conferma_responsabile = ft.Button("Conferma", on_click=conferma_responsabile)
 
     # Pulsanti per la gestione dell'inserimento di un nuovo strumento
-    # TODO
+    bottoneMeno= ft.IconButton(ft.Icons.REMOVE, on_click=diminuisci_valore)
+    bottonePiu= ft.IconButton(ft.Icons.ADD, on_click=aumenta_valore)
 
+    rigaContatore = ft.Row([bottoneMeno, input_valore, bottonePiu], alignment=ft.MainAxisAlignment.CENTER)
+
+    bottoneAggiungi = ft.Button("Aggiungi strumento", on_click=aggiungi_handler)
     # --- LAYOUT ---
     page.add(
         toggle_cambia_tema,
@@ -80,7 +133,13 @@ def main(page: ft.Page):
                alignment=ft.MainAxisAlignment.CENTER),
 
         # Sezione 3
-        # TODO
+        testoAggiungi,
+        inputTipo,
+        inputMarca,
+        inputAnno,
+        ft.Text("Valore in euro:"),
+        rigaContatore, #i bottoni piu e meno sono qui
+        bottoneAggiungi,
 
         # Sezione 4
         ft.Divider(),
